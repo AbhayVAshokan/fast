@@ -32,6 +32,7 @@ const fetchFile = (url, index) => {
     xhr.addEventListener("abort", resolve);
     xhr.addEventListener("error", reject);
     xhr.open("GET", url);
+    xhr.setRequestHeader("Cache-Control", "no-cache");
     xhr.send();
   });
 };
