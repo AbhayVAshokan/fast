@@ -8,7 +8,7 @@ export default defineNuxtConfig({
       "@nuxtjs/google-fonts",
       {
         families: {
-          Raleway: [400],
+          Orbitron: [400],
         },
       },
     ],
