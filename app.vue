@@ -75,6 +75,36 @@ const calculateDownloadSpeed = async () => {
   clearTimeout(timeout);
   isFinished.value = true;
 };
+
+useHead({
+  htmlAttrs: { lang: "en" },
+  link: [{ rel: "icon", type: "image/png", href: "/favicon.png" }],
+});
+
+useSeoMeta({
+  title: "Fast | Internet speed test",
+  ogTitle: "Fast | Internet speed test",
+  twitterTitle: "Fast | Internet speed test",
+  description: "Check your internet speed using this simple web app.",
+  ogDescription: "Check your internet speed using this simple web app.",
+  twitterDescription: "Check your internet speed using this simple web app.",
+  twitterCreatorId: "@abhayvashokan",
+  twitterSite: "@abhayvashokan",
+  ogUrl: "https://fast.abhay.app",
+  keywords: [
+    "speedtest",
+    "speed test",
+    "bandwidth",
+    "ping",
+    "throughput",
+    "nuxt",
+    "nuxt3",
+    "vue3",
+  ],
+  ogImage: "https://fast.abhay.app/cover.png",
+  twitterImage: "https://fast.abhay.app/cover.png",
+  twitterCard: "summary_large_image",
+});
 </script>
 
 <template>
@@ -84,11 +114,13 @@ const calculateDownloadSpeed = async () => {
       @calculate-download-speed="calculateDownloadSpeed"
       :is-calculating="isCalculating"
       :is-finished="isFinished"
-      >
+    >
       <p v-if="!isCalculating" class="text-5xl">Go</p>
       <div v-else class="text-8xl md:text-9xl flex items-end justify-center">
         <p>{{ Math.round(downloadSpeed.speed) }}</p>
-        <p class="text-3xl md:text-5xl leading-normal">{{ downloadSpeed.unit }}bps</p>
+        <p class="text-3xl md:text-5xl leading-normal">
+          {{ downloadSpeed.unit }}bps
+        </p>
       </div>
     </Button>
     <copyright></copyright>
