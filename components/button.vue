@@ -1,6 +1,12 @@
 <script setup>
-defineEmits(["calculateDownloadSpeed"]);
-defineProps({ isCalculating: Boolean, isFinished: Boolean });
+const emits = defineEmits(["calculateDownloadSpeed"]);
+const {isCalculating, isFinished } = defineProps({ isCalculating: Boolean, isFinished: Boolean });
+
+const handleCalculate = () => {
+  if (!isCalculating || isFinished) {
+    emits("calculateDownloadSpeed");
+  }
+}
 </script>
 
 <template>
@@ -10,10 +16,10 @@ defineProps({ isCalculating: Boolean, isFinished: Boolean });
     v-if="isFinished"
     name="ic:baseline-loop"
     class="retry"
-    @click="$emit('calculateDownloadSpeed')"
+    @click="handleCalculate"
   />
   <button
-    @click="$emit('calculateDownloadSpeed')"
+    @click="handleCalculate"
     :class="{ fade: isCalculating }"
   >
     <slot></slot>

@@ -15,6 +15,6 @@
 p {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  color: rgb(102, 102, 102);
+  color: rgb(192, 192, 192);
 }
 </style>

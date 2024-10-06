@@ -1,6 +1,7 @@
 <script setup>
 const isCalculating = ref(false);
 const isFinished = ref(false);
+const currentRequests = ref([]);
 
 // Ignore the first 200ms of download as buffer.
 const isBufferTime = ref(false);
@@ -26,14 +27,14 @@ const downloadSpeed = computed(() => {
   const totalBytes = bytesDownloaded.value.reduce(
     (sum, bytes, index) => sum + bytes - bufferTimeDownload.value[index]
   );
-  const bitsPerSecond = (totalBytes * 8) / (elapsedTimeMs / 1_000);
+  const bitsPerSecond = Math.abs((totalBytes * 8) / (elapsedTimeMs / 1_000));
 
   return formatSpeed(bitsPerSecond);
 });
 
 const fetchFile = (url, index) => {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
+  const xhr = new XMLHttpRequest();
+  const promise = new Promise((resolve, reject) => {
     xhr.addEventListener("progress", (e) => {
       bytesDownloaded.value[index] = e.loaded;
       if (isBufferTime.value) bufferTimeDownload.value[index] = e.loaded;
@@ -46,6 +47,8 @@ const fetchFile = (url, index) => {
     xhr.setRequestHeader("Cache-Control", "no-cache");
     xhr.send();
   });
+
+  return { xhr, promise };
 };
 
 const calculateDownloadSpeed = async () => {
@@ -53,6 +56,10 @@ const calculateDownloadSpeed = async () => {
   isCalculating.value = true;
   isFinished.value = false;
   startTime.value = new Date();
+  currentRequests.value.forEach((req) => req.abort());
+  bytesDownloaded.value = [0, 0, 0, 0, 0];
+  bufferTimeDownload.value = [0, 0, 0, 0, 0];
+
   const urls = [
     "/assets/sample.jpg?step=1",
     "/assets/sample.jpg?step=2",
@@ -61,17 +68,18 @@ const calculateDownloadSpeed = async () => {
     "/assets/sample.jpg?step=5",
   ];
   const requests = urls.map((url, index) => fetchFile(url, index));
+  currentRequests.value = requests.map((req) => req.xhr);
 
   const bufferTimeout = setTimeout(() => {
     isBufferTime.value = false;
     clearTimeout(bufferTimeout);
-  }, 250);
+  }, 400);
 
   const timeout = setTimeout(
-    () => requests.forEach((req) => req.abort()),
+    () => currentRequests.value.forEach((req) => req.abort()),
     20_000
   );
-  await Promise.all(requests);
+  await Promise.all(requests.map((req) => req.promise));
   clearTimeout(timeout);
   isFinished.value = true;
 };
@@ -129,7 +137,7 @@ useSeoMeta({
 
 <style>
 :root {
-  --background: #c9e4ca;
+  --background: #535353;
   --primary-button-foreground: #1e212b;
 }
 
