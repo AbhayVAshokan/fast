@@ -1,4 +1,11 @@
 <script setup>
+const isCalculating = ref(false);
+const isFinished = ref(false);
+
+// Ignore the first 200ms of download as buffer.
+const isBufferTime = ref(false);
+const bufferTimeDownload = ref([0, 0, 0, 0, 0]);
+
 const bytesDownloaded = ref([0, 0, 0, 0, 0]);
 const startTime = ref(null);
 
@@ -12,10 +19,13 @@ const formatSpeed = (bitsPerSecond) => {
 };
 
 const downloadSpeed = computed(() => {
-  if (!startTime.value) return null;
+  if (!startTime.value || isBufferTime.value)
+    return { speed: null, unit: null };
 
-  const elapsedTimeMs = Date.now() - startTime.value;
-  const totalBytes = bytesDownloaded.value.reduce((sum, bytes) => sum + bytes);
+  const elapsedTimeMs = Date.now() - startTime.value - 200;
+  const totalBytes = bytesDownloaded.value.reduce(
+    (sum, bytes, index) => sum + bytes - bufferTimeDownload.value[index]
+  );
   const bitsPerSecond = (totalBytes * 8) / (elapsedTimeMs / 1_000);
 
   return formatSpeed(bitsPerSecond);
@@ -24,10 +34,11 @@ const downloadSpeed = computed(() => {
 const fetchFile = (url, index) => {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    xhr.addEventListener(
-      "progress",
-      (e) => (bytesDownloaded.value[index] = e.loaded)
-    );
+    xhr.addEventListener("progress", (e) => {
+      bytesDownloaded.value[index] = e.loaded;
+      if (isBufferTime.value) bufferTimeDownload.value[index] = e.loaded;
+    });
+
     xhr.addEventListener("loadend", resolve);
     xhr.addEventListener("abort", resolve);
     xhr.addEventListener("error", reject);
@@ -38,30 +49,63 @@ const fetchFile = (url, index) => {
 };
 
 const calculateDownloadSpeed = async () => {
+  isBufferTime.value = true;
+  isCalculating.value = true;
+  isFinished.value = false;
   startTime.value = new Date();
   const urls = [
-    "/assets/sample-1.jpg",
-    "/assets/sample-2.jpg",
-    "/assets/sample-3.jpg",
-    "/assets/sample-4.jpg",
-    "/assets/sample-5.jpg",
+    "/assets/sample.jpg?step=1",
+    "/assets/sample.jpg?step=2",
+    "/assets/sample.jpg?step=3",
+    "/assets/sample.jpg?step=4",
+    "/assets/sample.jpg?step=5",
   ];
   const requests = urls.map((url, index) => fetchFile(url, index));
+
+  const bufferTimeout = setTimeout(() => {
+    isBufferTime.value = false;
+    clearTimeout(bufferTimeout);
+  }, 250);
+
   const timeout = setTimeout(
     () => requests.forEach((req) => req.abort()),
     20_000
   );
   await Promise.all(requests);
   clearTimeout(timeout);
+  isFinished.value = true;
 };
 </script>
 
 <template>
-  <div>
+  <main class="max-w-6xl mx-auto p-8 flex flex-col h-screen relative">
     <NuxtRouteAnnouncer />
-    <button @click="calculateDownloadSpeed">Start</button>
-    <div v-if="downloadSpeed">
-      <p>{{ Math.round(downloadSpeed.speed) }} {{ downloadSpeed.unit }}bps</p>
-    </div>
-  </div>
+    <Button
+      @calculate-download-speed="calculateDownloadSpeed"
+      :is-calculating="isCalculating"
+      :is-finished="isFinished"
+      >
+      <p v-if="!isCalculating" class="text-5xl">Go</p>
+      <div v-else class="text-8xl md:text-9xl flex items-end justify-center">
+        <p>{{ Math.round(downloadSpeed.speed) }}</p>
+        <p class="text-3xl md:text-5xl leading-normal">{{ downloadSpeed.unit }}bps</p>
+      </div>
+    </Button>
+    <copyright></copyright>
+  </main>
 </template>
+
+<style>
+:root {
+  --background: #c9e4ca;
+  --primary-button-foreground: #1e212b;
+}
+
+body {
+  font-family: Orbitron, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+    sans-serif;
+  background-color: var(--background);
+  overflow: hidden;
+}
+</style>
