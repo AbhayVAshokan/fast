@@ -1,30 +1,27 @@
 <script setup>
 const emits = defineEmits(["calculateDownloadSpeed"]);
-const {isCalculating, isFinished } = defineProps({ isCalculating: Boolean, isFinished: Boolean });
+const { isCalculating, isFinished } = defineProps({
+  isCalculating: Boolean,
+  isFinished: Boolean,
+});
 
 const handleCalculate = () => {
   if (!isCalculating || isFinished) {
     emits("calculateDownloadSpeed");
   }
-}
+};
 </script>
 
 <template>
   <div class="pulse"></div>
   <div class="ripple"></div>
-  <Icon
-    v-if="isFinished"
-    name="ic:baseline-loop"
-    class="retry"
-    @click="handleCalculate"
-  />
-  <button
-    @click="handleCalculate"
-    :class="{ fade: isCalculating }"
-  >
+  <Icon v-if="isFinished" name="ic:baseline-loop" class="retry" @click="handleCalculate" />
+  <button @click="handleCalculate" :class="{ fade: isCalculating }">
     <slot></slot>
   </button>
   <div class="overlay" :class="{ expand: isCalculating }"></div>
+
+  <Icon name="ic:baseline-loop" class="invisible" />
 </template>
 
 <style scoped>
@@ -75,26 +72,22 @@ button {
   color: #fff;
 
   &:hover {
-    background-color: rgba(
-      red(var(--primary-button-foreground)),
-      green(var(--primary-button-foreground)),
-      blue(var(--primary-button-foreground)),
-      0
-    );
+    background-color: rgba(red(var(--primary-button-foreground)),
+        green(var(--primary-button-foreground)),
+        blue(var(--primary-button-foreground)),
+        0);
 
-    & ~ .overlay {
-      transform:  translate(-50%, -50%) scale3d(1.5, 1.5, 1);
+    &~.overlay {
+      transform: translate(-50%, -50%) scale3d(1.5, 1.5, 1);
     }
   }
 }
 
 .fade {
-  background-color: rgba(
-    red(var(--primary-button-foreground)),
-    green(var(--primary-button-foreground)),
-    blue(var(--primary-button-foreground)),
-    0
-  );
+  background-color: rgba(red(var(--primary-button-foreground)),
+      green(var(--primary-button-foreground)),
+      blue(var(--primary-button-foreground)),
+      0);
 }
 
 .overlay {
@@ -112,7 +105,7 @@ button {
 }
 
 .expand {
-  transform:  translate(-50%, -50%)  scale3d(1.5, 1.5, 1);
+  transform: translate(-50%, -50%) scale3d(1.5, 1.5, 1);
 }
 
 @keyframes pulse {
