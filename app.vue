@@ -25,7 +25,7 @@ const downloadSpeed = computed(() => {
 
   const elapsedTimeMs = Date.now() - startTime.value - 200;
   const totalBytes = bytesDownloaded.value.reduce(
-    (sum, bytes, index) => sum + bytes - bufferTimeDownload.value[index]
+    (sum, bytes, index) => sum + bytes - bufferTimeDownload.value[index],
   );
   const bitsPerSecond = Math.abs((totalBytes * 8) / (elapsedTimeMs / 1_000));
 
@@ -77,7 +77,7 @@ const calculateDownloadSpeed = async () => {
 
   const timeout = setTimeout(
     () => currentRequests.value.forEach((req) => req.abort()),
-    20_000
+    20_000,
   );
   await Promise.all(requests.map((req) => req.promise));
   clearTimeout(timeout);
@@ -86,7 +86,10 @@ const calculateDownloadSpeed = async () => {
 
 useHead({
   htmlAttrs: { lang: "en" },
-  link: [{ rel: "icon", type: "image/png", href: "/favicon.png" }],
+  link: [
+    { rel: "icon", type: "image/png", href: "/favicon.png" },
+    { rel: "preconnect", href: "https://fast.abhay.app/assets/sample.jpg" },
+  ],
 });
 
 useSeoMeta({
@@ -118,11 +121,8 @@ useSeoMeta({
 <template>
   <main class="max-w-6xl mx-auto p-8 flex flex-col h-screen relative">
     <NuxtRouteAnnouncer />
-    <Button
-      @calculate-download-speed="calculateDownloadSpeed"
-      :is-calculating="isCalculating"
-      :is-finished="isFinished"
-    >
+    <Button @calculate-download-speed="calculateDownloadSpeed" :is-calculating="isCalculating"
+      :is-finished="isFinished">
       <p v-if="!isCalculating" class="text-5xl">Go</p>
       <div v-else class="text-8xl md:text-9xl flex items-end justify-center">
         <p>{{ Math.round(downloadSpeed.speed) }}</p>
@@ -142,8 +142,18 @@ useSeoMeta({
 }
 
 body {
-  font-family: Orbitron, system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+  font-family:
+    Orbitron,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    "Open Sans",
+    "Helvetica Neue",
     sans-serif;
   background-color: var(--background);
   overflow: hidden;
